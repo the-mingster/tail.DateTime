@@ -88,18 +88,18 @@
      |  CONSTRUCTOR
      |  @sicne  0.4.11 [0.2.0]
      */
-    var datetime = function(el, config){
-        el = (typeof el == "string")? d.querySelectorAll(el): el;
+    var datetime = function(el, config, context){
+        el = (typeof el == "string")? (context || d).querySelectorAll(el): el;
         if(el instanceof NodeList || el instanceof HTMLCollection || el instanceof Array){
             for(var _r = [], l = el.length, i = 0; i < l; i++){
-                _r.push(new datetime(el[i], config));
+                _r.push(new datetime(el[i], config, context));
             }
             return (_r.length === 1)? _r[0]: ((_r.length === 0)? false: _r);
         }
         if(!(el instanceof Element)){
             return false;
         } else if(!(this instanceof datetime)){
-            return new datetime(el, config);
+            return new datetime(el, config, context);
         }
 
         // Check Element
@@ -114,6 +114,7 @@
         }
 
         // Init Instance
+        this.context = (context || d);
         this.e = el;
         this.id = ++datetime.count;
         this.con = clone(datetime.defaults, config);
@@ -355,12 +356,12 @@
                 this.e.addEventListener("keyup", function(event){
                     self.callback.call(self, event);
                 });
-                d.addEventListener("keyup", function(event){
+                this.context.addEventListener("keyup", function(event){
                     if(self.dt.contains(event.target)){
                         self.callback.call(self, event);
                     }
                 });
-                d.addEventListener("click", function(event){
+                this.context.addEventListener("click", function(event){
                     if(self.dt.contains(event.target)){
                         self.callback.call(self, event);
                     } else if(!self.e.contains(event.target) && cHAS(self.dt, "calendar-open")){
@@ -369,7 +370,7 @@
                         }
                     }
                 });
-                d.addEventListener("mouseover", function(event){
+                this.context.addEventListener("mouseover", function(event){
                     if(self.dt.contains(event.target)){
                         self.callback.call(self, event);
                     }
@@ -555,7 +556,7 @@
 
             // Classes
             if(["top", "left", "right", "bottom"].indexOf(this.con.position) < 0){
-                var sta = d.querySelector(this.con.position);
+                var sta = this.context.querySelector(this.con.position);
                 cls.push("calendar-static");
             }
             if(this.con.rtl === true || ["ar", "he", "mdr", "sam", "syr"].indexOf(this.con.rtl) >= 0){
@@ -606,7 +607,7 @@
             }
 
             // Append Calendar
-            (sta || d.body).appendChild(dt);
+            (sta || this.context.body || this.context).appendChild(dt);
             return dt;
         },
 
@@ -1032,7 +1033,7 @@
             // Calc Tooltip Rect
             e.cssText = "opacity:0;visibility:hidden;";
             t.id = "tooltip-" + id + "-" + time;
-            d.appendChild(t);
+            this.context.appendChild(t);
             w = t.offsetWidth; h = t.offsetHeight;
 
             // Set Tooltip Rect
